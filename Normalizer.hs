@@ -23,9 +23,9 @@ import Source.TypeNormalizer.Model
 
 
 
+type Cost = Int
 
-
-normalize::ContextType -> (Int,ContextType)
+normalize::ContextType -> (Cost,ContextType)
 normalize (ContextType a b) = let type_               = ContextType (shapeNormalize a) (shapeNormalize b)
                                   (n,permutations) =  usefullCopmutations type_
                                
