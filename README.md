@@ -15,5 +15,6 @@ diferent type variables; As a work around we use an heuristic to reduce the cost
 actual computing it, tear it down if it is to expensive. 
 
 
-
+Right now is still under hevay development (well, as long as I have time...). There are plenty of thing to do, including, to check/proof (or at least
+make sure) that the notion of equivalence used is itself an actual notion of equivalence.
 
