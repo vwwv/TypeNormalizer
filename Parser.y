@@ -49,8 +49,8 @@ import Source.TypeNormalizer.Model
 %%
 
 
-ContextLevel : TopLevel                        { ContextType (Node (Closed "()") []) $1              }
-             | TopLevel required TopLevel      { ContextType $1                      $3              }
+ContexLevel  : TopLevel                        { ContexType (Node (Closed "()") []) $1               }
+             | TopLevel required TopLevel      { ContexType $1                      $3               }
 
 TopLevel     : ArgLevel                        { $1                                                  }
              | ArgLevel app TopLevel           { Node (Basic Exp)    [$3,$1]                         }
@@ -112,7 +112,7 @@ data Token a = Op
 
 
 
-parse:: String -> Either ParseError ContextType
+parse:: String -> Either ParseError ContexType
 parse str = calc =<< (transform <$> lexer str)
 
 

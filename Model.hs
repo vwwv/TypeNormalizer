@@ -12,7 +12,7 @@ import Data.Hashable
 import Control.Applicative
 
 
-data ContextType = ContextType Constraint Type 
+data ContexType = ContexType Constraint Type 
                  deriving (Show,Eq,Ord)
 
 -- A rose tree :

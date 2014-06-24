@@ -25,15 +25,23 @@ import Source.TypeNormalizer.Model
 
 type Cost = Int
 
-normalize::ContextType -> (Cost,ContextType)
-normalize (ContextType a b) = let type_               = ContextType (shapeNormalize a) (shapeNormalize b)
-                                  (n,permutations) =  usefullCopmutations type_
+normalize::ContexType -> (Cost,ContexType)
+normalize (ContexType a b) = let type_            = ContexType (shapeNormalize a) (shapeNormalize b)
+                                 (n,permutations) =  usefullCopmutations type_
                                
-                               in ( n
-                                  , fst$getTheBest type_ permutations
-                                  )
+                              in ( n
+                                 , fst$getTheBest type_ permutations
+                                 )
 
+{-
+   addConstraintsFromRHS  (Foo1 c => A c) (Foo2 c d => A c d b)  ==  (Foo1 c ,Foo2 c d)) => A c d b
 
+   Add the rhs type/constraint of 'x' to 'y'. This is use to transform method of a class represented by 'x'
+   to theis equivalent stand alone functions  
+
+-}
+addConstraintsFromRHS::ContexType -> ContexType -> ContexType
+addConstraintsFromRHS (ContexType _ a) (ContexType b c) = ContexType (Node (Basic Prod) [a,b]) c 
 
 
 shapeNormalize::Type -> Type
@@ -103,10 +111,10 @@ specialSort x = case x of
 
 
 
-getTheBest::ContextType -> [Permutation] -> (ContextType,Permutation)
-getTheBest (ContextType x y) permutations = foldl min (compute zeroPermutation) [ compute p | p <- permutations]
+getTheBest::ContexType -> [Permutation] -> (ContexType,Permutation)
+getTheBest (ContexType x y) permutations = foldl min (compute zeroPermutation) [ compute p | p <- permutations]
    where
-    compute p = ( ContextType (specialSort$ use p x) (specialSort$ use p y) 
+    compute p = ( ContexType (specialSort$ use p x) (specialSort$ use p y) 
                 , p
                 )
 
@@ -130,8 +138,8 @@ type Permutation = Map Int Int
 
 
 -----------------------------------------------------------------------------------------------
-usefullCopmutations:: ContextType -> (Int,[Permutation])
-usefullCopmutations (ContextType x y) = generatePermutations.dropRepeated $ usefull x ++ usefull y
+usefullCopmutations:: ContexType -> (Int,[Permutation])
+usefullCopmutations (ContexType x y) = generatePermutations.dropRepeated $ usefull x ++ usefull y
 
 {-
  Plenty room for improvement, buuuut, would it worth it?
