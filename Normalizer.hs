@@ -14,16 +14,16 @@ import Control.Applicative hiding (empty)
 import Control.Monad
 import qualified Data.Set as S 
 import Data.List (group,permutations,groupBy,mapAccumL)
+import Data.List
 
--- import Source.TypeNormalizer.Parser -- for debuging...
+--import Source.TypeNormalizer.Parser -- for debuging...
 import Source.TypeNormalizer.Model
 
 
 
 
 
-
-type Cost = Int
+type Cost = Integer -- it can not be an Int cause it can easily overflow! 
 
 normalize::ContexType -> (Cost,ContexType)
 normalize (ContexType a b) = let type_            = ContexType (shapeNormalize a) (shapeNormalize b)
@@ -138,7 +138,7 @@ type Permutation = Map Int Int
 
 
 -----------------------------------------------------------------------------------------------
-usefullCopmutations:: ContexType -> (Int,[Permutation])
+usefullCopmutations:: ContexType -> (Cost,[Permutation])
 usefullCopmutations (ContexType x y) = generatePermutations.dropRepeated $ usefull x ++ usefull y
 
 {-
@@ -153,7 +153,7 @@ usefull =  \case
                 
                 Node (Basic  _  )   xs           -> expand xs
                 
-                Node (Closed _  )   xs           -> expand xs
+                Node (Closed _  )   xs           -> expand xs 
 
                 Node (Open   x  )   xs           -> [x]: expand xs  
    
@@ -167,7 +167,7 @@ usefull =  \case
 {-
  Plenty room for improvement, buuuut, would it worth it?
 -}
-parcialSort::[Type]->[[Type]]
+parcialSort::[Type]->[[Type]] -- can improbe :)
 parcialSort = groupBy fun .sort
    where
     fun (Node a _ ) (Node b _ ) = a == b 
@@ -183,8 +183,8 @@ dropRepeated = snd.mapAccumL fun S.empty
 
                    in (used',xs')
 
-generatePermutations::[[Int]] -> (Int,[Permutation])
-generatePermutations options = ( product $ fmap (factorial.length)options
+generatePermutations::[[Int]] -> (Cost,[Permutation])
+generatePermutations options = ( prods $ fmap (factorial.genericLength) options
                                , fmap (fromList.zip ( nub$join options) ) (select$fmap permutations options)
                                ) -- nub shouldnt be neccesary -----> Something to Check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                  -- !!!!!!!!!!!!!!!!!!!!!!!!
@@ -197,8 +197,9 @@ generatePermutations options = ( product $ fmap (factorial.length)options
 
           select []     = [[]]
 
-          factorial n   = product [1..n]
+          factorial n   =  prods [1..n]
 
+          prods         =  foldr (*) 1
 ------------------------------------------------------------------------------------------------------------------------------------
 
 
