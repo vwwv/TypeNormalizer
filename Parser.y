@@ -41,7 +41,8 @@ import Source.TypeNormalizer.Model
       app_               {DesugaredApp   }     
       either_            {Either         }
       comma              {Comma          }
-      required           {Required       }
+      required           {Required       }      
+      required_          {Required_      }
       unit_              {Unit           }
       construct_         {Mayus $$       }
       vartype_           {Minus $$       } 
@@ -49,9 +50,15 @@ import Source.TypeNormalizer.Model
 %%
 
 
-ContexLevel  : TopLevel                        { ContexType (Node (Closed "()") []) $1               }
-             | TopLevel required TopLevel      { ContexType $1                      $3               }
+WithClass    : ContexLevel                        { ContexType  (fst $1)  (snd $1)                      }
+             
+             | ContexLevel required_ ContexLevel  { ContexType (Node (Basic Prod) [snd $1,fst $3]) (snd $3) 
+                                                  }
+                                                    
 
+ContexLevel  : TopLevel                        { (  Node (Basic Prod) []  ,  $1 )                    }
+             | TopLevel required TopLevel      { (  $1                    ,  $3 )                    }
+             
 TopLevel     : ArgLevel                        { $1                                                  }
              | ArgLevel app TopLevel           { Node (Basic Exp)    [$3,$1]                         }
              | ArgLevel '~' ArgLevel           { Node (Closed "~")   [$1,$3]                         }
@@ -102,6 +109,7 @@ data Token a = Op
              | Either
              | Comma
              | Required
+             | Required_
              | TypeEqual
              | DesugaredTuple
              | DesugaredApp
@@ -112,8 +120,13 @@ data Token a = Op
 
 
 
-parse:: String -> Either ParseError ContexType
-parse str = calc =<< (transform <$> lexer str)
+parse:: Maybe String -> String -> Either ParseError ContexType
+parse (Just clazz) str = calc =<< ( do r <- lexer clazz
+                                       l <- lexer str 
+                                       return$ transform (r++[Required_]++l) 
+                                  )
+                                   
+parse Nothing      str = calc =<< (transform <$> lexer str)
 
 
 transform::[Token String] -> [Token Int] 
@@ -136,6 +149,7 @@ transform = snd.mapAccumL go  M.empty
                    Either           -> (acc , Either  )                 
                    Comma            -> (acc , Comma   )
                    Required         -> (acc , Required)          
+                   Required_        -> (acc , Required_)
                    Unit             -> (acc , Unit    )          
                    Mayus x          -> (acc , Mayus x )    
 

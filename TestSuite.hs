@@ -26,6 +26,8 @@ import Data.Map (Map,fromList)
 ------------------------------------------------------------------
 -- Testing the normalizer:
 
+-- Normalize twice does not give up the same value for some cases!!
+
 
 
 equivalent::ContextType -> Bool

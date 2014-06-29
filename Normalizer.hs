@@ -16,7 +16,7 @@ import qualified Data.Set as S
 import Data.List (group,permutations,groupBy,mapAccumL)
 import Data.List
 
---import Source.TypeNormalizer.Parser -- for debuging...
+import Source.TypeNormalizer.Parser -- for debuging...
 import Source.TypeNormalizer.Model
 
 
@@ -24,6 +24,7 @@ import Source.TypeNormalizer.Model
 
 
 type Cost = Integer -- it can not be an Int cause it can easily overflow! 
+-- cost to include shape in the future! 
 
 normalize::ContexType -> (Cost,ContexType)
 normalize (ContexType a b) = let type_            = ContexType (shapeNormalize a) (shapeNormalize b)
@@ -32,16 +33,6 @@ normalize (ContexType a b) = let type_            = ContexType (shapeNormalize a
                               in ( n
                                  , fst$getTheBest type_ permutations
                                  )
-
-{-
-   addConstraintsFromRHS  (Foo1 c => A c) (Foo2 c d => A c d b)  ==  (Foo1 c ,Foo2 c d)) => A c d b
-
-   Add the rhs type/constraint of 'x' to 'y'. This is use to transform method of a class represented by 'x'
-   to theis equivalent stand alone functions  
-
--}
-addConstraintsFromRHS::ContexType -> ContexType -> ContexType
-addConstraintsFromRHS (ContexType _ a) (ContexType b c) = ContexType (Node (Basic Prod) [a,b]) c 
 
 
 shapeNormalize::Type -> Type
@@ -68,8 +59,8 @@ shapeNormalize = \case
 
 shapeNormalizeSum::[Type] -> Type
 shapeNormalizeSum xs = Node (Basic Sum) [ y | Node _ ys <- xs
-                                       , y         <- ys
-                                       ] 
+                                        , y         <- ys
+                                        ] 
 
 shapeNormalizeProduct::[Type]->Type 
 shapeNormalizeProduct = \case 
@@ -107,7 +98,6 @@ specialSort :: Type -> Type
 specialSort x = case x of
                  Node (Basic Exp) (x:xs)  -> Node (Basic Exp)  . (x:).sort $ fmap specialSort xs
                  Node base        xs      -> Node base         .      sort $ fmap specialSort xs 
-
 
 
 
@@ -205,7 +195,35 @@ generatePermutations options = ( prods $ fmap (factorial.genericLength) options
 
 
 
+{-
 
+(1, ContexType (Node (Basic Sum) 
+         [ Node (Basic Prod) 
+           [ Node (Closed "()") []
+           , Node (Closed "Monad") 
+              [ Node (Basic Sum) 
+                 [ Node (Basic Prod) 
+                    [Node (Open 0) [] ]
+                 ]
+              ]
+           ]
+         ]) 
+         (Node (Basic Sum) [Node (Basic Prod) [Node (Basic Exp) [Node (Open 0) [Node (Basic Sum) [Node (Basic Prod) [Node (Open 1) []]]],Node (Open 1) []]]]))
+         (Node (Basic Sum) [Node (Basic Prod) [Node (Basic Exp) [Node (Open 0) [Node (Basic Sum) [Node (Basic Prod) [Node (Open 1) []]]],Node (Open 1) []]]]))
+         
+(1, ContexType (Node (Basic Sum) 
+         [ Node (Basic Prod) 
+           [ Node (Closed "Monad") 
+             [ Node (Basic Sum) 
+                [ Node (Basic Prod) 
+                  [ Node (Open 0) [] ]
+                ]
+              ]
+            ]
+         ]) 
+
+
+-}
 
 
 
